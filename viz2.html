@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+
+body { font: 12px Arial;}
+
+path { 
+    stroke: steelblue;
+    stroke-width: 2;
+    fill: none;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+div.tooltip {   
+    position: absolute;         
+    text-align: center;         
+    width: 120px;                    
+    height: 32px;                   
+    padding: 2px;               
+    font: 12px sans-serif;  
+    background: lightsteelblue;     
+    border: 0px;        
+    border-radius: 8px;         
+    pointer-events: none;           
+}
+
+</style>
+<html>
+<head>
+    <title>Bubble Chart Carbon Bombs</title>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <style type="text/css">
+    #graphic{
+        height:960px;
+    }
+    </style>
+</head>
+<body>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 left" >
+                
+            </div>
+            <div class="col-md-6 right"></div>
+        </div>
+    </div>
+</body>
+</html>
+
+<div id="graphic"></div>
+
+<script type="text/javascript">
+    /*******************  START HERE ********************
+    Step 1) Create a variable called "data"
+    Step 2) Assign an Array of numbers (any random numbers) to the data variable.
+    Run this file. Then, change up some of the numbers.
+    ******************************************************/
+  d3.csv("viz_data.csv", function(error, data){
+
+    //convert numerical values from strings to numbers
+    data = data.map(function(d){ d.value = +d["wins"]; d.name = d["name"];
+    return d; });
+
+    var diameter = 1000,
+        format = d3.format(",d"),
+        color = d3.scale.category20b();
+    var bubble = d3.layout.pack()
+        .sort(null)
+        .size([diameter, diameter])
+        .padding(1.5);
+    var svg = d3.select("#graphic")
+        .append("svg")
+        .attr("width", diameter)
+        .attr("height", diameter)
+        .attr("class", "bubble")
+    var bubbles = svg.append("g");
+
+    // Define the div for the tooltip
+var div = d3.select(".left").append("div")   
+    .attr("class", "tooltip")               
+    .style("opacity", 0);
+
+    var text = svg.append("g");
+   // if(typeof data !== "undefined"){
+      // data = data.map(function(d){ return { name: Math.round(Math.random() * 100000).toString(), value: d}; })
+        var nodes = bubble.nodes({children:data}).filter(function(d) { return !d.children; });
+        var circles = bubbles.selectAll("circle")
+            .data(nodes, function(d){return d.name;})
+            .enter()
+            .append("circle")
+            .attr("r", function(d) { return 0; })
+            .style("fill", function(d) { return color(d.value); })
+            .attr("cx", function(d){ return d.x;})
+            .attr("cy", function(d){ return d.y;})
+            .attr("class", "node")
+            .on("mouseover", function(d) {      
+            div.transition()        
+                .duration(200)      
+                .style("opacity", .9);      
+            div .html(d.name + " </br> Wins :"  + d.value)  
+                .style("left", (d3.event.pageX) + "px")     
+                .style("top", (d3.event.pageY - 28) + "px");    
+            })                  
+            .on("mouseout", function(d) {       
+                div.transition()        
+                    .duration(500)      
+                    .style("opacity", 0);   
+            })
+            .transition()
+            .delay(function(d, i){
+                return i * 10;
+            })
+            .duration(700)
+            .attr("r", function(d) { 
+                return d.r; 
+            })
+            .each("end", function(d) {
+                text.append("text")
+                  .attr("x", d.x)
+                  .attr("y", d.y + 5)
+                  .attr("text-anchor", "middle")
+                  .text(() => { 
+                    if (d.value>15) 
+                        return d.name;
+                    else
+                        return '';
+                    })
+                  .style({fill:"black", "font-family":"Helvetica Neue, Helvetica"});
+            }
+            
+            );
+            
+      // }
+    });
+</script>
+</body>
+</html>
